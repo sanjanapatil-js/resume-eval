@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Resume Evaluator</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+tailwind.config={theme:{extend:{fontFamily:{sans:['Manrope','sans-serif']},colors:{brand:{bg:'#FAF9F6',card:'#FDFBF7',red:'#8B1F25',dark:'#1A1A1A',gray:'#666666'}}}}}
+</script>
+<style>
+/* Subtle Animations & Utilities */
+.loader{border:3px solid rgba(255,255,255,.3);border-radius:50%;border-top:3px solid #fff;width:20px;height:20px;animation:spin 1s linear infinite;display:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+input[type=file]::file-selector-button{margin-right:16px;border:none;background:#f3f4f6;padding:8px 16px;border-radius:6px;color:#374151;cursor:pointer;font-weight:600;transition:all .2s ease-out}
+input[type=file]::file-selector-button:hover{background:#e5e7eb; transform: translateY(-1px);}
+
+.rainbow-btn-wrapper{position:relative;display:inline-flex;justify-content:center;align-items:center;overflow:hidden;border-radius:9999px;padding:2px;cursor:pointer;transition:transform .3s cubic-bezier(0.34, 1.56, 0.64, 1)}
+.rainbow-btn-wrapper:hover{transform:scale(1.02)}
+.rainbow-btn-wrapper::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:conic-gradient(from 0deg,transparent 0deg,#4285F4 90deg,#EA4335 180deg,#FBBC05 270deg,#34A853 360deg);animation:rot 4s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+.rainbow-btn-inner{position:relative;background:#ffffff;color:#000000;border-radius:9999px;padding:8px 20px;font-size:.875rem;font-weight:700;display:flex;align-items:center;gap:8px;z-index:10}
+
+.card-wrap{position:relative; height: 100%;}
+.card-wrap .shadow-offset{position:absolute;top:6px;left:6px;width:100%;height:100%;border-radius:12px;transition:transform .4s cubic-bezier(0.175, 0.885, 0.32, 1.275)}
+.card-wrap:hover .shadow-offset{transform:translate(2px,2px)}
+.card-wrap:hover .card-surface{transform:translateY(-2px)}
+.card-surface{position:relative;z-index:10;transition:transform .4s cubic-bezier(0.175, 0.885, 0.32, 1.275); height: 100%;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+.anim-fade{animation:fadeUp .6s cubic-bezier(0.16, 1, 0.3, 1) both}
+
+.score-bar{transition:width 1.5s cubic-bezier(.4,0,.2,1)}
+.medal-1{color:#FFD700}.medal-2{color:#C0C0C0}.medal-3{color:#CD7F32}
+
+/* Scrollbar styling for lists */
+.custom-scroll::-webkit-scrollbar {width: 6px;}
+.custom-scroll::-webkit-scrollbar-track {background: transparent;}
+.custom-scroll::-webkit-scrollbar-thumb {background-color: #e5e7eb;border-radius: 20px;}
+</style>
+</head>
+<body class="bg-brand-bg text-brand-dark min-h-screen flex flex-col font-sans selection:bg-brand-red selection:text-white">
+
+<!-- Nav -->
+<nav class="w-full px-6 py-4 flex justify-between items-center bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-200 shadow-sm">
+    <div class="flex items-center gap-4">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRwBl1bClVusX8WnrTD8qEis45w_Qf2oCODHA&s" alt="Logo" class="h-10 w-auto object-contain">
+    </div>
+    
+    <div class="hidden lg:flex items-center gap-6 text-sm font-semibold text-gray-600">
+        <div class="flex gap-4">
+            <a href="https://github.com/sanjanapatil-js" target="_blank" class="hover:text-brand-red hover:scale-110 transition-all duration-300" title="GitHub"><i data-lucide="github" class="w-5 h-5"></i></a>
+            <a href="https://linkedin.com/in/sanjana-patil-26a08b222" target="_blank" class="hover:text-blue-600 hover:scale-110 transition-all duration-300" title="LinkedIn"><i data-lucide="linkedin" class="w-5 h-5"></i></a>
+            <a href="mailto:patilsanjana10008@gmail.com" class="hover:text-red-500 hover:scale-110 transition-all duration-300" title="Email"><i data-lucide="mail" class="w-5 h-5"></i></a>
+        </div>
+        <div class="h-4 w-px bg-gray-300"></div>
+        <a href="https://sanjana-patil.web.app" target="_blank" class="hover:text-brand-red transition-colors">Portfolio</a>
+    </div>
+
+    <div class="flex items-center gap-4">
+        <a href="mailto:patilsanjana10008@gmail.com" class="rainbow-btn-wrapper no-underline">
+            <div class="rainbow-btn-inner"><i data-lucide="sparkles" class="w-4 h-4"></i>Hire Me</div>
+        </a>
+    </div>
+</nav>
+
+<main class="flex-grow container mx-auto px-4 py-8 md:py-12">
+    
+    <!-- Main Grid Layout: Form | Results | Leaderboard -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 items-start">
+
+        <!-- Column 1: Input Form -->
+        <div class="w-full anim-fade">
+            <div class="card-wrap">
+                <div class="shadow-offset bg-brand-red"></div>
+                <div class="card-surface bg-brand-card border border-brand-red rounded-xl p-8 flex flex-col h-full">
+                    <div class="flex justify-between items-start mb-6">
+                        <div class="p-3 bg-white border border-gray-200 rounded-full shadow-sm"><i data-lucide="file-text" class="text-brand-red w-6 h-6"></i></div>
+                        <span class="bg-red-50 text-brand-red text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider">Multi-Resume</span>
+                    </div>
+                    <h1 class="text-3xl font-extrabold mb-2">Resume Evaluator</h1>
+                    <p class="text-gray-600 mb-8 text-sm leading-relaxed">Upload <strong>multiple PDF resumes</strong>. Get instant scores, rankings & actionable AI feedback.</p>
+                    
+                    <form method="POST" action="/evaluate" enctype="multipart/form-data" class="space-y-6 flex-grow" id="evalForm">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Job Description</label>
+                            <textarea name="job_description" rows="5" required class="w-full p-4 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-red focus:border-brand-red focus:outline-none transition resize-none text-sm shadow-inner placeholder-gray-400" placeholder="Paste job requirements here..."></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Upload Resumes (PDF)</label>
+                            <input type="file" name="files" accept=".pdf" required multiple class="w-full bg-white border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-brand-red focus:outline-none"/>
+                        </div>
+                        <button type="submit" id="submitBtn" class="w-full bg-brand-dark text-white py-4 rounded-lg font-bold hover:bg-black transition-all flex justify-center items-center gap-2 shadow-lg mt-auto">
+                            <span id="btnText">Analyze Match</span>
+                            <div class="loader" id="loader"></div>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Column 2: Detailed Results -->
+        <div class="w-full h-full">
+            {% if results %}
+            <div class="space-y-6 max-h-[800px] overflow-y-auto custom-scroll pr-2 pb-2">
+                {% for r in results %}
+                <div class="card-wrap anim-fade" style="animation-delay:{{ loop.index0 * 0.1 }}s">
+                    <div class="shadow-offset bg-gray-800"></div>
+                    <div class="card-surface bg-white border border-gray-200 rounded-xl p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="p-2 bg-gray-50 border border-gray-100 rounded-full"><i data-lucide="file-check" class="text-green-600 w-5 h-5"></i></div>
+                                <div class="overflow-hidden">
+                                    <p class="font-bold text-sm truncate w-40" title="{{ r.filename }}">{{ r.filename }}</p>
+                                    <p class="text-[10px] text-gray-400 font-mono">ID: {{ r.id }}</p>
+                                </div>
+                            </div>
+                            <span class="bg-green-100 text-green-800 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider">Analyzed</span>
+                        </div>
+
+                        <!-- Score -->
+                        <div class="bg-brand-bg p-4 rounded-lg border border-gray-100 shadow-inner mb-4">
+                            <div class="flex justify-between items-end mb-2">
+                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Match Score</p>
+                                <span class="text-3xl font-black text-brand-dark">{{ r.score }}<span class="text-sm text-gray-400 font-medium">/100</span></span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                                <div class="bg-brand-red h-full rounded-full score-bar" style="width:0%" data-w="{{ r.score }}%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Content -->
+                        <div class="space-y-3">
+                            <div>
+                                <h3 class="text-xs font-bold text-gray-800 mb-1 flex items-center gap-1"><i data-lucide="lightbulb" class="w-3.5 h-3.5 text-yellow-500"></i>Suggestion</h3>
+                                <p class="text-sm text-gray-600 leading-relaxed">{{ r.suggestion }}</p>
+                            </div>
+                            
+                            {% if r.edits %}
+                            <div class="pt-2 border-t border-gray-100">
+                                <h3 class="text-xs font-bold text-gray-800 mb-2 flex items-center gap-1"><i data-lucide="pen-tool" class="w-3.5 h-3.5 text-purple-500"></i>Quick Edits</h3>
+                                <ul class="space-y-1">
+                                    {% for edit in r.edits[:2] %}
+                                    <li class="flex items-start gap-2 text-xs text-gray-500">
+                                        <i data-lucide="arrow-right" class="w-3 h-3 text-brand-red mt-0.5 flex-shrink-0"></i>
+                                        <span>{{ edit }}</span>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <!-- Placeholder -->
+            <div class="card-wrap h-full opacity-60 select-none grayscale">
+                <div class="shadow-offset bg-gray-300"></div>
+                <div class="card-surface bg-brand-card border border-gray-300 rounded-xl p-8 h-full flex flex-col justify-center items-center text-center">
+                    <div class="p-4 bg-white border border-gray-200 rounded-full mb-6"><i data-lucide="bar-chart-2" class="text-gray-400 w-8 h-8"></i></div>
+                    <h2 class="text-2xl font-extrabold text-gray-400 mb-2">Analysis Results</h2>
+                    <p class="text-gray-400 text-sm max-w-xs">Upload resumes to see detailed breakdowns and edit suggestions in this column.</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Column 3: Leaderboard -->
+        <div class="w-full h-full">
+            {% if rankings %}
+            <div class="card-wrap anim-fade" style="animation-delay:0.2s">
+                <div class="shadow-offset bg-brand-red"></div>
+                <div class="card-surface bg-brand-card border border-brand-red rounded-xl p-6 h-full flex flex-col">
+                    <div class="flex justify-between items-center mb-6">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 bg-white border border-gray-200 rounded-full shadow-sm"><i data-lucide="trophy" class="text-yellow-500 w-5 h-5"></i></div>
+                            <div>
+                                <h2 class="text-lg font-extrabold">Leaderboard</h2>
+                                <p class="text-[10px] text-gray-500 uppercase tracking-widest">{{ rankings|length }} Candidates</p>
+                            </div>
+                        </div>
+                        <form method="POST" action="/clear">
+                            <button type="submit" class="text-xs font-bold text-gray-400 hover:text-red-500 transition flex items-center gap-1 bg-white px-2 py-1 rounded border border-gray-200"><i data-lucide="trash-2" class="w-3 h-3"></i> Clear</button>
+                        </form>
+                    </div>
+                    
+                    <div class="overflow-y-auto custom-scroll flex-grow pr-1">
+                        <table class="w-full text-sm border-collapse">
+                            <thead class="sticky top-0 bg-brand-card z-10">
+                                <tr class="border-b-2 border-gray-100 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                    <th class="pb-2 pl-2">#</th>
+                                    <th class="pb-2">Candidate</th>
+                                    <th class="pb-2 text-right pr-2">Score</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for r in rankings %}
+                                <tr class="border-b border-gray-50 hover:bg-white transition group">
+                                    <td class="py-3 pl-2 font-black text-sm w-10">
+                                        <span class="{% if r.rank == 1 %}medal-1{% elif r.rank == 2 %}medal-2{% elif r.rank == 3 %}medal-3{% else %}text-gray-400{% endif %}">
+                                            {{ r.rank }}
+                                        </span>
+                                    </td>
+                                    <td class="py-3">
+                                        <p class="font-bold text-gray-800 text-xs truncate max-w-[120px]">{{ r.filename }}</p>
+                                    </td>
+                                    <td class="py-3 text-right pr-2">
+                                        <span class="inline-block px-2 py-1 rounded text-xs font-bold {% if r.score >= 80 %}bg-green-100 text-green-700{% elif r.score >= 50 %}bg-yellow-100 text-yellow-700{% else %}bg-red-100 text-red-700{% endif %}">
+                                            {{ r.score }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <!-- Placeholder Leaderboard -->
+            <div class="card-wrap h-full opacity-60 select-none grayscale hidden xl:block">
+                <div class="shadow-offset bg-gray-200"></div>
+                <div class="card-surface bg-brand-card border border-gray-300 rounded-xl p-8 h-full flex flex-col justify-center items-center text-center">
+                    <div class="p-4 bg-white border border-gray-200 rounded-full mb-6"><i data-lucide="list-ordered" class="text-gray-400 w-8 h-8"></i></div>
+                    <h2 class="text-2xl font-extrabold text-gray-400 mb-2">Rankings</h2>
+                    <p class="text-gray-400 text-sm max-w-xs">Candidates will be ranked here by relevance score once analyzed.</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+    </div>
+
+    <!-- Developer Guide Section -->
+    <div class="mt-16 max-w-4xl mx-auto anim-fade" style="animation-delay: 0.3s">
+        <div class="border-t border-gray-200 pt-10">
+            <div class="flex items-center gap-2 mb-4">
+                <i data-lucide="terminal-square" class="text-gray-600"></i>
+                <h3 class="text-lg font-bold text-gray-800">Developer API Guide</h3>
+            </div>
+            <p class="text-sm text-gray-600 mb-4">Integrate this evaluator directly into your workflow using our API endpoint.</p>
+            
+            <div class="bg-brand-dark rounded-xl overflow-hidden shadow-lg group relative">
+                <div class="flex items-center px-4 py-2 bg-[#2a2a2a] border-b border-gray-700">
+                    <div class="flex gap-1.5">
+                        <div class="w-2.5 h-2.5 rounded-full bg-red-500"></div>
+                        <div class="w-2.5 h-2.5 rounded-full bg-yellow-500"></div>
+                        <div class="w-2.5 h-2.5 rounded-full bg-green-500"></div>
+                    </div>
+                    <span class="ml-4 text-xs text-gray-400 font-mono">bash</span>
+                </div>
+                <div class="p-5 overflow-x-auto">
+                    <pre class="font-mono text-xs md:text-sm text-green-400 whitespace-pre-wrap">
+curl -X POST http://localhost:5000/evaluate \
+  -F "job_description=Looking for Senior Python Developer..." \
+  -F "files=@resume1.pdf" \
+  -F "files=@resume2.pdf"</pre>
+                </div>
+                <button onclick="navigator.clipboard.writeText('curl -X POST http://localhost:5000/evaluate -F \'job_description=...\' -F \'files=@resume.pdf\'')" class="absolute top-12 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition backdrop-blur-sm" title="Copy to clipboard">
+                    <i data-lucide="copy" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<footer class="text-center py-8 text-xs font-semibold text-gray-400 border-t border-gray-200 mt-8 bg-white/50">
+    &copy; 2026 Sanjana Patil. All rights reserved.
+</footer>
+
+<script>
+lucide.createIcons();
+const f=document.getElementById('evalForm'),b=document.getElementById('submitBtn'),l=document.getElementById('loader'),t=document.getElementById('btnText');
+f.addEventListener('submit',()=>{b.classList.add('opacity-80','cursor-not-allowed');t.textContent='Processing...';l.style.display='block';b.disabled=true});
+setTimeout(()=>{document.querySelectorAll('.score-bar').forEach(el=>{el.style.width=el.dataset.w})},300);
+</script>
+</body>
+</html>
