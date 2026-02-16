@@ -256,12 +256,12 @@ input[type=file]::file-selector-button:hover{background:#e5e7eb; transform: tran
                 </div>
                 <div class="p-5 overflow-x-auto">
                     <pre class="font-mono text-xs md:text-sm text-green-400 whitespace-pre-wrap">
-curl -X POST http://localhost:5000/evaluate \
+curl -X POST https://sanjanajsx-resume-eval.hf.space/evaluate \
   -F "job_description=Looking for Senior Python Developer..." \
   -F "files=@resume1.pdf" \
   -F "files=@resume2.pdf"</pre>
                 </div>
-                <button onclick="navigator.clipboard.writeText('curl -X POST http://localhost:5000/evaluate -F \'job_description=...\' -F \'files=@resume.pdf\'')" class="absolute top-12 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition backdrop-blur-sm" title="Copy to clipboard">
+                <button onclick="navigator.clipboard.writeText('curl -X POST https://sanjanajsx-resume-eval.hf.space/evaluate -F \'job_description=...\' -F \'files=@resume.pdf\'')" class="absolute top-12 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition backdrop-blur-sm" title="Copy to clipboard">
                     <i data-lucide="copy" class="w-4 h-4"></i>
                 </button>
             </div>
