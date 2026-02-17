@@ -31,6 +31,7 @@ rankings: list[dict] = []
 
 # Pydantic Model for AI Response
 class EvaluationResponse(BaseModel):
+    is_resume: bool = Field(description="True if the text appears to be a resume/CV, False otherwise.")
     score: int = Field(..., ge=0, le=100)
     suggestion: str
     justification: str
@@ -53,11 +54,14 @@ def extract_text(file_bytes: bytes) -> str:
     return text.strip()
 
 SYSTEM_PROMPT = """You are an expert ATS (Applicant Tracking System) and Resume Recruiter.
-Compare the Job Description (JD) and the User Resume. 
-Calculate a match score (0-100) based on skills, experience, and keywords.
-
+1. ANALYZE the input text provided as 'user_resume'.
+2. DETERMINE if the text is a valid Resume or CV. 
+   - If it is a recipe, a book, code only, or gibberish, set "is_resume" to false and "score" to 0.
+3. IF it is a resume, compare it against the 'job_description'.
+   - Calculate a match score (0-100) based on skills, experience, and keywords.
 Return response in STRICT JSON format:
 {
+  "is_resume": true,
   "score": 0,
   "suggestion": "Brief advice (max 20 words).",
   "justification": "Why this score? (max 20 words).",
@@ -85,9 +89,10 @@ async def evaluate_resume(jd: str, resume: str) -> EvaluationResponse:
             # Fallback in case of AI failure
             print(f"AI Error: {e}")
             return EvaluationResponse(
+                is_resume=False,
                 score=0, 
                 suggestion="AI Service Unavailable", 
-                justification="Could not process resume.", 
+                justification="Could not process file.", 
                 edits=[]
             )
 
@@ -120,7 +125,7 @@ async def evaluate(
     """
     results = []
 
-    # Process all files concurrently could be an option, but we'll do sequential for simplicity/rate-limits
+    # Process all files
     for f in files:
         # 1. Validate File Type
         if not f.filename.lower().endswith(".pdf"):
@@ -148,13 +153,16 @@ async def evaluate(
             }
             
             results.append(entry)
-            rankings.append(entry)
+            
+            # Only add to rankings if it is actually a resume
+            if entry["is_resume"]:
+                rankings.append(entry)
+                
         except Exception as e:
             print(f"Skipping {f.filename}: {e}")
             continue
 
     if not results:
-        # You might want to return the page with an error, or just the page
         return templates.TemplateResponse("index.html", {
             "request": request, 
             "results": [], 
