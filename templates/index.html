@@ -14,28 +14,22 @@ tailwind.config={theme:{extend:{fontFamily:{sans:['Manrope','sans-serif']},color
 /* Subtle Animations & Utilities */
 .loader{border:3px solid rgba(255,255,255,.3);border-radius:50%;border-top:3px solid #fff;width:20px;height:20px;animation:spin 1s linear infinite;display:none}
 @keyframes spin{to{transform:rotate(360deg)}}
-
 input[type=file]::file-selector-button{margin-right:16px;border:none;background:#f3f4f6;padding:8px 16px;border-radius:6px;color:#374151;cursor:pointer;font-weight:600;transition:all .2s ease-out}
 input[type=file]::file-selector-button:hover{background:#e5e7eb; transform: translateY(-1px);}
-
 .rainbow-btn-wrapper{position:relative;display:inline-flex;justify-content:center;align-items:center;overflow:hidden;border-radius:9999px;padding:2px;cursor:pointer;transition:transform .3s cubic-bezier(0.34, 1.56, 0.64, 1)}
 .rainbow-btn-wrapper:hover{transform:scale(1.02)}
 .rainbow-btn-wrapper::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:conic-gradient(from 0deg,transparent 0deg,#4285F4 90deg,#EA4335 180deg,#FBBC05 270deg,#34A853 360deg);animation:rot 4s linear infinite}
 @keyframes rot{to{transform:rotate(360deg)}}
 .rainbow-btn-inner{position:relative;background:#ffffff;color:#000000;border-radius:9999px;padding:8px 20px;font-size:.875rem;font-weight:700;display:flex;align-items:center;gap:8px;z-index:10}
-
 .card-wrap{position:relative; height: 100%;}
 .card-wrap .shadow-offset{position:absolute;top:6px;left:6px;width:100%;height:100%;border-radius:12px;transition:transform .4s cubic-bezier(0.175, 0.885, 0.32, 1.275)}
 .card-wrap:hover .shadow-offset{transform:translate(2px,2px)}
 .card-wrap:hover .card-surface{transform:translateY(-2px)}
 .card-surface{position:relative;z-index:10;transition:transform .4s cubic-bezier(0.175, 0.885, 0.32, 1.275); height: 100%;}
-
 @keyframes fadeUp{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
 .anim-fade{animation:fadeUp .6s cubic-bezier(0.16, 1, 0.3, 1) both}
-
 .score-bar{transition:width 1.5s cubic-bezier(.4,0,.2,1)}
 .medal-1{color:#FFD700}.medal-2{color:#C0C0C0}.medal-3{color:#CD7F32}
-
 /* Scrollbar styling for lists */
 .custom-scroll::-webkit-scrollbar {width: 6px;}
 .custom-scroll::-webkit-scrollbar-track {background: transparent;}
@@ -112,15 +106,26 @@ input[type=file]::file-selector-button:hover{background:#e5e7eb; transform: tran
                     <div class="card-surface bg-white border border-gray-200 rounded-xl p-6">
                         <div class="flex justify-between items-start mb-4">
                             <div class="flex items-center gap-3">
-                                <div class="p-2 bg-gray-50 border border-gray-100 rounded-full"><i data-lucide="file-check" class="text-green-600 w-5 h-5"></i></div>
+                                <div class="p-2 bg-gray-50 border border-gray-100 rounded-full">
+                                    {% if r.is_resume %}
+                                    <i data-lucide="file-check" class="text-green-600 w-5 h-5"></i>
+                                    {% else %}
+                                    <i data-lucide="file-warning" class="text-red-600 w-5 h-5"></i>
+                                    {% endif %}
+                                </div>
                                 <div class="overflow-hidden">
                                     <p class="font-bold text-sm truncate w-40" title="{{ r.filename }}">{{ r.filename }}</p>
                                     <p class="text-[10px] text-gray-400 font-mono">ID: {{ r.id }}</p>
                                 </div>
                             </div>
+                            {% if r.is_resume %}
                             <span class="bg-green-100 text-green-800 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider">Analyzed</span>
+                            {% else %}
+                            <span class="bg-red-100 text-red-800 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider">Invalid</span>
+                            {% endif %}
                         </div>
 
+                        {% if r.is_resume %}
                         <!-- Score -->
                         <div class="bg-brand-bg p-4 rounded-lg border border-gray-100 shadow-inner mb-4">
                             <div class="flex justify-between items-end mb-2">
@@ -153,6 +158,14 @@ input[type=file]::file-selector-button:hover{background:#e5e7eb; transform: tran
                             </div>
                             {% endif %}
                         </div>
+                        {% else %}
+                        <!-- Not a Resume Fallback -->
+                        <div class="bg-red-50 border border-red-100 rounded-lg p-4 text-center">
+                            <h3 class="text-sm font-bold text-red-800 mb-1">Not a Resume</h3>
+                            <p class="text-xs text-red-600">The content of this file does not appear to be a candidate profile or CV.</p>
+                        </div>
+                        {% endif %}
+
                     </div>
                 </div>
                 {% endfor %}
